@@ -1,31 +1,32 @@
+import { RecipesService } from './recipes.service';
 import { Recipe } from './recipe.model';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-recipes',
   templateUrl: './recipes.page.html',
   styleUrls: ['./recipes.page.scss'],
 })
-export class RecipesPage implements OnInit {
+export class RecipesPage implements OnInit, OnDestroy {
 
-  recipes: Recipe[] = [
-    {
-      id: 'r1',
-      title: 'Gulgule',
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Gulgule.jpg',
-      ingredients: ['oil', 'Flour', 'Sugar']
-    },
-    {
-      id: 'r2',
-      title: 'Bizerte',
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/73/Fishmarket_in_Bizerte_05.jpg',
-      ingredients: ['fish', 'oil', 'tomato']
-    }
-  ];
+  private recipeListSubs: Subscription;
+  recipes: Recipe[];
 
-  constructor() { }
+  constructor(private recipeService: RecipesService) { }
 
   ngOnInit() {
+    this.loadRecipes();
   }
 
+  loadRecipes() {
+    this.recipes = this.recipeService.getAllRecipes();
+    this.recipeListSubs = this.recipeService.recipesChanged.subscribe(recipes => {
+      this.recipes = recipes;
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.recipeListSubs.unsubscribe();
+  }
 }
